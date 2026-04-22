@@ -1,5 +1,5 @@
 # models/equipement.py
-from models.ressource import Ressource
+from .ressource import Ressource
 
 
 class Equipement(Ressource):

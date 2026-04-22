@@ -1,6 +1,5 @@
 # models/salle.py
-from models.ressource import Ressource
-
+from .ressource import Ressource
 
 class Salle(Ressource):
     """Représentation d'une salle avec ses équipements"""
