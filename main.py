@@ -1,11 +1,13 @@
 import sys
+import os
+print(os.listdir())
 sys.path.insert(0, r"C:\Users\USER\PythonProject\PythonProject")
 
 from models.salle import Salle
 from models.equipement import Equipement
-from services.planning import Planning
-from services.auth import AuthService
-from services.notification import NotificationService
+from service.planning import Planning
+from service.auth import AuthService
+from service.notification import NotificationService
 from gui.login import LoginWindow
 from gui.app import App
 

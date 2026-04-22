@@ -402,11 +402,17 @@ class App(tk.Tk):
     def _actualiser_salles(self):
         for row in self.tableau_salles.get_children():
             self.tableau_salles.delete(row)
+
         for s in self.planning.get_salles():
             self.tableau_salles.insert("", "end", values=(
-                s.get_id(), s.get_numero(), s.get_nom(), s.get_type(),
-                s.get_capacite(), s.get_noms_equipements(),
-                s.get_localisation(), "Disponible" if s.est_disponible() else "Indisponible"
+                s.get_id(),
+                s.get_numero(),
+                s.get_nom(),
+                s.get_type(),
+                s.get_capacite(),
+                s.nom_equipements(),  # ✅ CORRECTION ICI
+                s.get_localisation(),
+                "Disponible" if s.est_disponible() else "Indisponible"
             ))
 
     def _actualiser_planning(self):
