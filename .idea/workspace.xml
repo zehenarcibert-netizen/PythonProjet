@@ -5,17 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fa0537ce-db64-49f7-836a-5956d752bf5f" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/gui/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/service/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/exceptions/bloc5_exceptions_demo.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/exceptions/exceptions_projet.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gui/dialogs.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gui/main_final.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gui/splash.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/conftest.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_reservation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bloc2.py" beforeDir="false" afterPath="$PROJECT_DIR$/bloc2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gui/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gui/init.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/init.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/resevation.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/reservation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/utilisateur.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/utilisateur.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/service/init.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/gui/login.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/login.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/service/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/service/auth.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,16 +44,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.main.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "master",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.app.executor&quot;: &quot;Run&quot;,
+    &quot;Python.dialogs.executor&quot;: &quot;Run&quot;,
+    &quot;Python.login.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main_final.executor&quot;: &quot;Run&quot;,
+    &quot;Python.splash.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="PythonProject" />
@@ -98,5 +104,16 @@
       <updated>1776842222935</updated>
     </task>
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

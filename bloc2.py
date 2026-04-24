@@ -1,7 +1,3 @@
-# bloc2_types_complexes.py
-# BLOC 2 — Types de données complexes
-# Exercice appliqué au Projet 7 (Réservation de salles)
-# Université de Parakou
 
 # ─── 1. LISTES ────────────────────────────────────────────────────────────────
 print("=" * 55)

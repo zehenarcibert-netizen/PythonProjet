@@ -2,6 +2,8 @@
 import tkinter as tk
 from tkinter import messagebox
 
+from gui.splash import BLEU_CLAIR
+
 BLEU_FONCE = "#1a3a5c"
 BLEU_MOYEN = "#2563a8"
 BLANC      = "#ffffff"
@@ -17,8 +19,8 @@ class LoginWindow(tk.Tk):
         self.auth = auth_service
         self.utilisateur_connecte = None
 
-        self.title("Connexion — Système de Réservation")
-        self.geometry("400x480")
+        self.title("Authentification ")
+        self.geometry("800x700")
         self.resizable(False, False)
         self.configure(bg=GRIS_CLAIR)
 
@@ -27,12 +29,11 @@ class LoginWindow(tk.Tk):
 
     def _construire_ui(self):
         # En-tête
-        header = tk.Frame(self, bg=BLEU_FONCE)
+        header = tk.Frame(self, bg=BLEU_CLAIR)
         header.pack(fill="x")
         tk.Label(header, text="🏫", font=("Segoe UI", 36),
                  bg=BLEU_FONCE, fg=BLANC, pady=20).pack()
-        tk.Label(header, text="Université de Parakou",
-                 font=("Segoe UI", 12, "bold"), bg=BLEU_FONCE, fg=BLANC).pack()
+
         tk.Label(header, text="Système de Réservation de Salles",
                  font=("Segoe UI", 9), bg=BLEU_FONCE, fg="#93c5fd", pady=8).pack()
 
@@ -41,7 +42,7 @@ class LoginWindow(tk.Tk):
         cadre.pack(fill="both", expand=True, padx=40)
 
         tk.Label(cadre, text="Email", font=("Segoe UI", 9, "bold"),
-                 bg=GRIS_CLAIR, fg=TEXTE, anchor="w").pack(fill="x", pady=(15, 2))
+                 bg=GRIS_CLAIR, fg=TEXTE, anchor="w").pack(fill="x", pady=(18, 5))
         self.entry_email = tk.Entry(cadre, font=POLICE, bd=1, relief="solid",
                                     fg=TEXTE, bg=BLANC)
         self.entry_email.pack(fill="x", ipady=6)
@@ -66,9 +67,11 @@ class LoginWindow(tk.Tk):
         tk.Label(cadre, text="Comptes de démonstration :",
                  font=("Segoe UI", 8, "bold"), bg=GRIS_CLAIR, fg="#64748b").pack(pady=(15, 2))
         demos = [
-            ("Admin",     "admin@up.bj",    "admin123"),
-            ("Enseignant","k.adjonou@up.bj","enseign123"),
+            ("Admin",     "admin@up.bj",    ""),
+            ("Enseignant","k.adjonou@up.bj",""),
             ("Agent",     "m.bello@up.bj",  "agent123"),
+            ("Agent", " ", "")
+
         ]
         for role, email, mdp in demos:
             tk.Label(cadre, text=f"{role}: {email} / {mdp}",

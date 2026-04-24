@@ -35,7 +35,7 @@ class App(tk.Tk):
         # Header
         header = tk.Frame(self, bg=BLEU_FONCE, height=55)
         header.pack(fill="x")
-        tk.Label(header, text="Systeme de Reservation de Salles — Universite de Parakou",
+        tk.Label(header, text="Systeme de Reservation de Salles",
                  font=("Segoe UI", 13, "bold"), bg=BLEU_FONCE, fg=BLANC, pady=15).pack(side="left", padx=20)
         tk.Button(header, text=f"Deconnexion ({self.user.get_prenom()})",
                   font=("Segoe UI", 9), bg="#334155", fg=BLANC, relief="flat",
@@ -45,12 +45,12 @@ class App(tk.Tk):
         self.notebook = ttk.Notebook(self)
         self.notebook.pack(fill="both", expand=True, padx=10, pady=8)
 
-        self.tab_reservation  = tk.Frame(self.notebook, bg=GRIS_CLAIR)
-        self.tab_planning     = tk.Frame(self.notebook, bg=GRIS_CLAIR)
-        self.tab_salles       = tk.Frame(self.notebook, bg=GRIS_CLAIR)
-        self.tab_utilisateurs = tk.Frame(self.notebook, bg=GRIS_CLAIR)
-        self.tab_rapports     = tk.Frame(self.notebook, bg=GRIS_CLAIR)
-        self.tab_notifications= tk.Frame(self.notebook, bg=GRIS_CLAIR)
+        self.tab_reservation  = tk.Frame(self.notebook, bg=GRIS_CLAIR,pady=10)
+        self.tab_planning     = tk.Frame(self.notebook, bg=GRIS_CLAIR, pady=10)
+        self.tab_salles       = tk.Frame(self.notebook, bg=GRIS_CLAIR, pady=10)
+        self.tab_utilisateurs = tk.Frame(self.notebook, bg=GRIS_CLAIR, pady=10)
+        self.tab_rapports     = tk.Frame(self.notebook, bg=GRIS_CLAIR, pady=10)
+        self.tab_notifications= tk.Frame(self.notebook, bg=GRIS_CLAIR, pady=10)
 
         self.notebook.add(self.tab_reservation,  text="  Reservations  ")
         self.notebook.add(self.tab_planning,     text="  Planning  ")
@@ -87,34 +87,34 @@ class App(tk.Tk):
         def lbl(texte, row):
             tk.Label(form, text=texte, font=POLICE, bg=BLANC,
                      fg=TEXTE, anchor="w").grid(row=row, column=0,
-                     sticky="w", padx=12, pady=5)
+                     sticky="w", padx=12, pady=10)
 
         lbl("Salle :", 0)
         noms = [s.get_nom() for s in self.planning.get_salles()]
         self.var_salle = tk.StringVar(value=noms[0] if noms else "")
         self.combo_salle = ttk.Combobox(form, textvariable=self.var_salle,
                                         values=noms, state="readonly", width=22)
-        self.combo_salle.grid(row=0, column=1, padx=12, pady=5)
+        self.combo_salle.grid(row=0, column=1, padx=12, pady=10)
 
         lbl("Responsable :", 1)
         self.entry_resp = tk.Entry(form, font=POLICE, width=25, bd=1, relief="solid")
         self.entry_resp.insert(0, self.user.get_nom_complet())
-        self.entry_resp.grid(row=1, column=1, padx=12, pady=5)
+        self.entry_resp.grid(row=1, column=1, padx=12, pady=10)
 
         lbl("Date (JJ/MM/AAAA) :", 2)
         self.entry_date = tk.Entry(form, font=POLICE, width=25, bd=1, relief="solid")
         self.entry_date.insert(0, date.today().strftime("%d/%m/%Y"))
-        self.entry_date.grid(row=2, column=1, padx=12, pady=5)
+        self.entry_date.grid(row=2, column=1, padx=12, pady=10)
 
         lbl("Debut (HH:MM) :", 3)
         self.entry_debut = tk.Entry(form, font=POLICE, width=25, bd=1, relief="solid")
         self.entry_debut.insert(0, "08:00")
-        self.entry_debut.grid(row=3, column=1, padx=12, pady=5)
+        self.entry_debut.grid(row=3, column=1, padx=12, pady=10)
 
         lbl("Fin (HH:MM) :", 4)
         self.entry_fin = tk.Entry(form, font=POLICE, width=25, bd=1, relief="solid")
         self.entry_fin.insert(0, "10:00")
-        self.entry_fin.grid(row=4, column=1, padx=12, pady=5)
+        self.entry_fin.grid(row=4, column=1, padx=12, pady=10)
 
         lbl("Motif :", 5)
         self.entry_motif = tk.Entry(form, font=POLICE, width=25, bd=1, relief="solid")
@@ -410,7 +410,7 @@ class App(tk.Tk):
                 s.get_nom(),
                 s.get_type(),
                 s.get_capacite(),
-                s.nom_equipements(),  # ✅ CORRECTION ICI
+                s.nom_equipements(),
                 s.get_localisation(),
                 "Disponible" if s.est_disponible() else "Indisponible"
             ))

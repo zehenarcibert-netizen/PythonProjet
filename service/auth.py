@@ -15,7 +15,8 @@ class AuthService:
             Utilisateur("Admin",    "Super",   "admin@up.bj",    "admin123",    "administrateur"),
             Utilisateur("Adjonou",  "Kofi",    "k.adjonou@up.bj","enseign123",  "enseignant"),
             Utilisateur("Bello",    "Maryam",  "m.bello@up.bj",  "agent123",    "agent"),
-            Utilisateur("Dossou",   "Thierry", "t.dossou@up.bj", "enseign123",  "enseignant"),
+            Utilisateur("ZEHE", "Narcibert", "zehenarcibert@gmail.com", "Zeheepiph@nie976090", "administrateur"),
+            Utilisateur("YAOITCHA", "Rosette", "yaoitcharosette@gmail.com", "12345678", "agent"),
         ]
 
     # --- Authentification ---
