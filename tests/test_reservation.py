@@ -59,7 +59,7 @@ class TestReservation:
     def test_creation_reservation(self, salle_test, date_test):
         r = Reservation(salle_test, "prof.A", date_test,time(8, 0), time(10, 0), "cours")
         assert r.get_responsable() == "Prof.A"
-        assert r.get_heure_debut() === time(8, 0)
+        assert r.get_heure_debut() == time(8, 0)
         assert r.get_heure_fin()== time(10,0)
         assert r.get_motif() =="cours"
 
@@ -133,12 +133,12 @@ class TestPlanning:
 
 # ─── TESTS : UTILISATEUR & AUTH ─-----────
     class TestAuth:
+
     def test_connexion_correcte(self):
         auth = AuthService()
         succes, msg = auth.connecter("admin@up.bj", "admin123")
         assert succes is True
         assert auth.est_connecte() is True
-
     def test_connexion_mauvais_mdp(self):
         auth = AuthService()
         succes, _ = auth.connecter("admin@up.bj", "mauvais")

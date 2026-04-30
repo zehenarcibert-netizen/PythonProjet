@@ -22,6 +22,8 @@ class SplashScreen(tk.Toplevel):
         x = (self.winfo_screenwidth()  - largeur) // 2
         y = (self.winfo_screenheight() - hauteur) // 2
         self.geometry(f"{largeur}x{hauteur}+{x}+{y}")
+        
+        
 
         # Contenu
         tk.Label(self, text="", font=("Segoe UI", 52),

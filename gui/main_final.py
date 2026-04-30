@@ -1,3 +1,4 @@
+
 import sys
 import os
 
@@ -19,7 +20,7 @@ def main():
     splash = SplashScreen(root)
 
     splash.progresser(10, "Initialisation...")
-    time.sleep(0.5)
+    time.sleep(0.7)
 
     from models.salle       import Salle
     from models.equipement  import Equipement

@@ -1,0 +1,32 @@
+# Cache Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+
+# Environnements virtuels
+.venv/
+.venv1/
+.venv2/
+.venv3/
+venv/
+env/
+
+# Base de données SQLite
+*.db
+*.sqlite
+*.sqlite3
+
+# Fichiers exports
+*.csv
+*.json
+
+# PyCharm
+.idea/
+
+# Logs
+*.log
+
+# Fichiers système Windows
+Thumbs.db
+desktop.ini

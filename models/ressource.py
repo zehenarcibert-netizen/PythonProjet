@@ -1,5 +1,5 @@
 # models/ressource.py
-# Classe mère pour toutes les ressources de l'université
+# Classe mère pour toutes les ressources
 
 class Ressource:
     """Classe abstraite représentant une ressource universitaire."""

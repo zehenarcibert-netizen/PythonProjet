@@ -4,7 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fa0537ce-db64-49f7-836a-5956d752bf5f" name="Changes" comment="" />
+    <list default="true" id="fa0537ce-db64-49f7-836a-5956d752bf5f" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gui/main_final.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/main_final.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gui/splash.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/splash.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/ressource.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/ressource.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_reservation.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_reservation.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -35,11 +42,16 @@
   "keyToString": {
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "Python.app.executor": "Run",
+    "Python.bloc2.executor": "Run",
+    "Python.bloc3.executor": "Run",
+    "Python.bloc5_exceptions_demo.executor": "Run",
     "Python.dialogs.executor": "Run",
     "Python.login.executor": "Run",
     "Python.main.executor": "Run",
     "Python.main_final.executor": "Run",
+    "Python.ressource.executor": "Run",
     "Python.splash.executor": "Run",
+    "Python.test_reservation.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main",
