@@ -5,7 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fa0537ce-db64-49f7-836a-5956d752bf5f" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/database/init.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bloc4_demo.py" beforeDir="false" afterPath="$PROJECT_DIR$/bloc4_demo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/db_manager.py" beforeDir="false" afterPath="$PROJECT_DIR$/database/db_manager.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/reservation_dao.py" beforeDir="false" afterPath="$PROJECT_DIR$/database/reservation_dao.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/salle_dao.py" beforeDir="false" afterPath="$PROJECT_DIR$/database/salle_dao.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gui/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gui/login.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/login.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gui/splash.py" beforeDir="false" afterPath="$PROJECT_DIR$/gui/splash.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/salle.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/salle.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,12 +49,17 @@
     "Python.app.executor": "Run",
     "Python.bloc2.executor": "Run",
     "Python.bloc3.executor": "Run",
+    "Python.bloc4_demo.executor": "Run",
     "Python.bloc5_exceptions_demo.executor": "Run",
+    "Python.db_manager.executor": "Run",
     "Python.dialogs.executor": "Run",
     "Python.login.executor": "Run",
     "Python.main.executor": "Run",
     "Python.main_final.executor": "Run",
+    "Python.reservation_dao.executor": "Run",
     "Python.ressource.executor": "Run",
+    "Python.salle_dao.executor": "Run",
+    "Python.sauvegarde.executor": "Run",
     "Python.splash.executor": "Run",
     "Python.test_reservation.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",

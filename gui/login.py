@@ -25,7 +25,13 @@ class LoginWindow(tk.Tk):
         self.configure(bg=GRIS_CLAIR)
 
         self._construire_ui()
-        self.eval('tk::PlaceWindow . center')
+
+        self.update_idletasks()
+        largeur = 400
+        hauteur = 480
+        x = (self.winfo_screenwidth() - largeur) // 2
+        y = (self.winfo_screenheight() - hauteur) // 2
+        self.geometry(f"{largeur}x{hauteur}+{x}+{y}")
 
     def _construire_ui(self):
         # En-tête
@@ -63,6 +69,10 @@ class LoginWindow(tk.Tk):
                   bg=BLEU_MOYEN, fg=BLANC, relief="flat", cursor="hand2",
                   pady=8, command=self._connecter).pack(fill="x", pady=5)
 
+        tk.Button(cadre, text="Crée un compte", font=("Segoe UI", 10, "bold"),
+                  bg=BLEU_MOYEN, fg=BLEU_CLAIR, relief="flat", cursor="hand2",
+                  pady=8, command=self._connecter).pack(fill="x", pady=10)
+
         # Comptes de démo
         tk.Label(cadre, text="Comptes de démonstration :",
                  font=("Segoe UI", 8, "bold"), bg=GRIS_CLAIR, fg="#64748b").pack(pady=(15, 2))
@@ -82,7 +92,7 @@ class LoginWindow(tk.Tk):
 
     def _connecter(self):
         email = self.entry_email.get().strip()
-        mdp   = self.entry_mdp.get().strip()
+        mdp = self.entry_mdp.get().strip()
 
         if not email or not mdp:
             self.lbl_erreur.config(text="Veuillez remplir tous les champs.")
@@ -91,7 +101,7 @@ class LoginWindow(tk.Tk):
         succes, message = self.auth.connecter(email, mdp)
         if succes:
             self.utilisateur_connecte = self.auth.get_utilisateur_connecte()
-            self.destroy()
+            self.destroy()  # ← ferme la fenêtre login
         else:
             self.lbl_erreur.config(text=message)
 

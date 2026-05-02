@@ -34,6 +34,11 @@ class Salle(Ressource):
     def get_type(self):
         return self.__type_salle
 
+    def get_noms_equipements(self) -> str:
+        if not self.__equipements:
+            return "Aucun"
+        return ", ".join(e.get_type() for e in self.__equipements)
+
     def get_capacite(self):
         return self.__capacite
 
@@ -53,6 +58,11 @@ class Salle(Ressource):
             f"{self.__type_salle} | {self.__capacite} places | "
             f"{self.nom_equipements()} | {self.get_localisation()}"
         )
+
+    def get_noms_equipements(self) -> str:
+        if not self.__equipements:
+            return "Introuvable"
+        return ", ".join(e.get_type() for e in self.__equipements)
 
     def __str__(self):
         return self.get_info()

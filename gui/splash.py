@@ -43,7 +43,8 @@ class SplashScreen(tk.Toplevel):
         tk.Label(self, text="Bienvenus sur notre portail  \n"
                             "Nous vou prinons de prendre le soint de lire les condition de confidentialiter ",
                  font=("Segoe UI", 18),
-                 bg=BLEU_FONCE, fg="#64748b").pack()
+                 bg=BLEU_FONCE
+                 , fg="#64748b").pack()
 
         # Barre de progression
         self.canvas = tk.Canvas(self, width=800, height=5,

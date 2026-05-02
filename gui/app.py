@@ -1,4 +1,6 @@
-# gui/app.py
+# gui/app.py — Interface principale
+# Liaison SQLite : chaque réservation est sauvegardée immédiatement
+
 import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import date, time, datetime
@@ -8,7 +10,6 @@ BLEU_MOYEN  = "#2563a8"
 BLEU_CLAIR  = "#dbeafe"
 VERT        = "#16a34a"
 ROUGE       = "#dc2626"
-ORANGE      = "#d97706"
 GRIS_CLAIR  = "#f1f5f9"
 BLANC       = "#ffffff"
 TEXTE       = "#0f172a"
@@ -17,47 +18,64 @@ POLICE_TITRE= ("Segoe UI", 12, "bold")
 
 
 class App(tk.Tk):
-    def __init__(self, planning, auth_service, notif_service):
-        super().__init__()
-        self.planning = planning
-        self.auth = auth_service
-        self.notif = notif_service
-        self.user = auth_service.get_utilisateur_connecte()
 
-        self.title(f"Reservation de Salles — {self.user.get_nom_complet()} [{self.user.get_role()}]")
+    #  constructeur
+    def __init__(self, planning, auth_service, notif_service, res_dao=None):
+        super().__init__()
+        self.planning  = planning
+        self.auth      = auth_service
+        self.notif     = notif_service
+        self.res_dao   = res_dao        # ← BLOC 4 : liaison SQLite
+        self.user      = auth_service.get_utilisateur_connecte()
+
+        self.title(
+            f"Reservation de Salles — "
+            f"{self.user.get_nom_complet()} [{self.user.get_role()}]"
+        )
         self.geometry("1100x680")
         self.configure(bg=GRIS_CLAIR)
 
         self._construire_ui()
         self._actualiser_tout()
 
+    # ══════════════════════════════════════════════════════════
+    # CONSTRUCTION UI
+    # ══════════════════════════════════════════════════════════
+
     def _construire_ui(self):
         # Header
         header = tk.Frame(self, bg=BLEU_FONCE, height=55)
         header.pack(fill="x")
-        tk.Label(header, text="Systeme de Reservation de Salles",
-                 font=("Segoe UI", 13, "bold"), bg=BLEU_FONCE, fg=BLANC, pady=15).pack(side="left", padx=20)
-        tk.Button(header, text=f"Deconnexion ({self.user.get_prenom()})",
-                  font=("Segoe UI", 9), bg="#334155", fg=BLANC, relief="flat",
-                  cursor="hand2", command=self._deconnecter).pack(side="right", padx=15, pady=12)
+        tk.Label(
+            header,
+            text="Systeme de Reservation de Salles — Universite de Parakou",
+            font=("Segoe UI", 13, "bold"), bg=BLEU_FONCE, fg=BLANC, pady=15
+        ).pack(side="left", padx=20)
+        tk.Button(
+            header,
+            text=f"Deconnexion ({self.user.get_prenom()})",
+            font=("Segoe UI", 9), bg="#334155", fg=BLANC,
+            relief="flat", cursor="hand2", command=self._deconnecter
+        ).pack(side="right", padx=15, pady=12)
 
         # Onglets
         self.notebook = ttk.Notebook(self)
         self.notebook.pack(fill="both", expand=True, padx=10, pady=8)
 
-        self.tab_reservation  = tk.Frame(self.notebook, bg=GRIS_CLAIR,pady=10)
-        self.tab_planning     = tk.Frame(self.notebook, bg=GRIS_CLAIR, pady=10)
-        self.tab_salles       = tk.Frame(self.notebook, bg=GRIS_CLAIR, pady=10)
-        self.tab_utilisateurs = tk.Frame(self.notebook, bg=GRIS_CLAIR, pady=10)
-        self.tab_rapports     = tk.Frame(self.notebook, bg=GRIS_CLAIR, pady=10)
-        self.tab_notifications= tk.Frame(self.notebook, bg=GRIS_CLAIR, pady=10)
+        self.tab_reservation   = tk.Frame(self.notebook, bg=GRIS_CLAIR)
+        self.tab_planning      = tk.Frame(self.notebook, bg=GRIS_CLAIR)
+        self.tab_salles        = tk.Frame(self.notebook, bg=GRIS_CLAIR)
+        self.tab_notifications = tk.Frame(self.notebook, bg=GRIS_CLAIR)
+        self.tab_rapports      = tk.Frame(self.notebook, bg=GRIS_CLAIR)
 
-        self.notebook.add(self.tab_reservation,  text="  Reservations  ")
-        self.notebook.add(self.tab_planning,     text="  Planning  ")
-        self.notebook.add(self.tab_salles,       text="  Salles  ")
-        self.notebook.add(self.tab_notifications,text="  Notifications  ")
-        self.notebook.add(self.tab_rapports,     text="  Rapports  ")
+        self.notebook.add(self.tab_reservation,   text="  Reservations  ")
+        self.notebook.add(self.tab_planning,      text="  Planning  ")
+        self.notebook.add(self.tab_salles,        text="  Salles  ")
+        self.notebook.add(self.tab_notifications, text="  Notifications  ")
+        self.notebook.add(self.tab_rapports,      text="  Rapports  ")
+
         if self.user.peut_gerer_utilisateurs():
+            self.tab_utilisateurs = tk.Frame(self.notebook, bg=GRIS_CLAIR)
             self.notebook.add(self.tab_utilisateurs, text="  Utilisateurs  ")
 
         self._build_tab_reservation()
@@ -69,87 +87,107 @@ class App(tk.Tk):
             self._build_tab_utilisateurs()
 
         # Barre de statut
-        self.barre_stat = tk.Label(self, text="", font=("Segoe UI", 9),
-                                   bg=BLEU_FONCE, fg=BLANC, anchor="w", pady=4)
+        self.barre_stat = tk.Label(
+            self, text="", font=("Segoe UI", 9),
+            bg=BLEU_FONCE, fg=BLANC, anchor="w", pady=4
+        )
         self.barre_stat.pack(fill="x", side="bottom")
 
-    # ─── TAB RESERVATIONS ─────────────────────────────────────────────────────
+    # ══════════════════════════════════════════════════════════
+    # TAB RÉSERVATIONS
+    # ══════════════════════════════════════════════════════════
+
     def _build_tab_reservation(self):
-        tab = self.tab_reservation
+        tab  = self.tab_reservation
         corps = tk.Frame(tab, bg=GRIS_CLAIR)
         corps.pack(fill="both", expand=True, padx=10, pady=8)
 
-        # Formulaire
-        form = tk.LabelFrame(corps, text=" Nouvelle Reservation ",
-                             font=POLICE_TITRE, bg=BLANC, fg=BLEU_FONCE, bd=2)
+        # ── Formulaire ────────────────────────────────────────
+        form = tk.LabelFrame(
+            corps, text=" Nouvelle Reservation ",
+            font=POLICE_TITRE, bg=BLANC, fg=BLEU_FONCE, bd=2
+        )
         form.pack(side="left", fill="y", padx=(0, 8))
 
         def lbl(texte, row):
-            tk.Label(form, text=texte, font=POLICE, bg=BLANC,
-                     fg=TEXTE, anchor="w").grid(row=row, column=0,
-                     sticky="w", padx=12, pady=10)
+            tk.Label(
+                form, text=texte, font=POLICE,
+                bg=BLANC, fg=TEXTE, anchor="w"
+            ).grid(row=row, column=0, sticky="w", padx=12, pady=5)
 
         lbl("Salle :", 0)
         noms = [s.get_nom() for s in self.planning.get_salles()]
         self.var_salle = tk.StringVar(value=noms[0] if noms else "")
-        self.combo_salle = ttk.Combobox(form, textvariable=self.var_salle,
-                                        values=noms, state="readonly", width=22)
-        self.combo_salle.grid(row=0, column=1, padx=12, pady=10)
+        self.combo_salle = ttk.Combobox(
+            form, textvariable=self.var_salle,
+            values=noms, state="readonly", width=22
+        )
+        self.combo_salle.grid(row=0, column=1, padx=12, pady=5)
 
         lbl("Responsable :", 1)
         self.entry_resp = tk.Entry(form, font=POLICE, width=25, bd=1, relief="solid")
         self.entry_resp.insert(0, self.user.get_nom_complet())
-        self.entry_resp.grid(row=1, column=1, padx=12, pady=10)
+        self.entry_resp.grid(row=1, column=1, padx=12, pady=5)
 
         lbl("Date (JJ/MM/AAAA) :", 2)
         self.entry_date = tk.Entry(form, font=POLICE, width=25, bd=1, relief="solid")
         self.entry_date.insert(0, date.today().strftime("%d/%m/%Y"))
-        self.entry_date.grid(row=2, column=1, padx=12, pady=10)
+        self.entry_date.grid(row=2, column=1, padx=12, pady=5)
 
         lbl("Debut (HH:MM) :", 3)
         self.entry_debut = tk.Entry(form, font=POLICE, width=25, bd=1, relief="solid")
         self.entry_debut.insert(0, "08:00")
-        self.entry_debut.grid(row=3, column=1, padx=12, pady=10)
+        self.entry_debut.grid(row=3, column=1, padx=12, pady=5)
 
         lbl("Fin (HH:MM) :", 4)
         self.entry_fin = tk.Entry(form, font=POLICE, width=25, bd=1, relief="solid")
         self.entry_fin.insert(0, "10:00")
-        self.entry_fin.grid(row=4, column=1, padx=12, pady=10)
+        self.entry_fin.grid(row=4, column=1, padx=12, pady=5)
 
         lbl("Motif :", 5)
         self.entry_motif = tk.Entry(form, font=POLICE, width=25, bd=1, relief="solid")
         self.entry_motif.grid(row=5, column=1, padx=12, pady=5)
 
         def btn(texte, color, cmd, row):
-            tk.Button(form, text=texte, font=("Segoe UI", 9, "bold"),
-                      bg=color, fg=BLANC, relief="flat", cursor="hand2",
-                      pady=6, command=cmd).grid(
-                      row=row, column=0, columnspan=2, sticky="ew", padx=12, pady=4)
+            tk.Button(
+                form, text=texte, font=("Segoe UI", 9, "bold"),
+                bg=color, fg=BLANC, relief="flat", cursor="hand2",
+                pady=6, command=cmd
+            ).grid(row=row, column=0, columnspan=2,
+                   sticky="ew", padx=12, pady=4)
 
-        btn("Reserver", BLEU_MOYEN, self._reserver, 6)
-        btn("Salles disponibles", VERT, self._voir_disponibles, 7)
-        btn("Supprimer selection", ROUGE, self._supprimer, 8)
+        btn("Reserver",            BLEU_MOYEN, self._reserver,         6)
+        btn("Salles disponibles",  VERT,       self._voir_disponibles, 7)
+        btn("Supprimer selection", ROUGE,      self._supprimer,        8)
 
-        # Tableau
-        liste = tk.LabelFrame(corps, text=" Planning des Reservations ",
-                              font=POLICE_TITRE, bg=BLANC, fg=BLEU_FONCE, bd=2)
+        # ── Tableau des réservations ───────────────────────────
+        liste = tk.LabelFrame(
+            corps, text=" Planning des Reservations ",
+            font=POLICE_TITRE, bg=BLANC, fg=BLEU_FONCE, bd=2
+        )
         liste.pack(side="right", fill="both", expand=True)
 
-        cols = ("ID", "Salle", "Date", "Debut", "Fin", "Responsable", "Motif")
-        self.tableau_res = ttk.Treeview(liste, columns=cols, show="headings", height=22)
+        cols    = ("ID", "Salle", "Date", "Debut", "Fin", "Responsable", "Motif")
         largeurs = [40, 120, 90, 60, 60, 150, 180]
+        self.tableau_res = ttk.Treeview(
+            liste, columns=cols, show="headings", height=22
+        )
         for col, larg in zip(cols, largeurs):
             self.tableau_res.heading(col, text=col)
             self.tableau_res.column(col, width=larg, anchor="center")
 
-        sc = ttk.Scrollbar(liste, orient="vertical", command=self.tableau_res.yview)
+        sc = ttk.Scrollbar(liste, orient="vertical",
+                           command=self.tableau_res.yview)
         self.tableau_res.configure(yscroll=sc.set)
         sc.pack(side="right", fill="y")
         self.tableau_res.pack(fill="both", expand=True, padx=8, pady=8)
-        self.tableau_res.tag_configure("pair", background=BLEU_CLAIR)
+        self.tableau_res.tag_configure("pair",   background=BLEU_CLAIR)
         self.tableau_res.tag_configure("impair", background=BLANC)
 
-    # ─── TAB PLANNING ─────────────────────────────────────────────────────────
+    # ══════════════════════════════════════════════════════════
+    # TAB PLANNING
+    # ══════════════════════════════════════════════════════════
+
     def _build_tab_planning(self):
         tab = self.tab_planning
         ctrl = tk.Frame(tab, bg=GRIS_CLAIR)
@@ -158,101 +196,134 @@ class App(tk.Tk):
         tk.Label(ctrl, text="Vue :", font=POLICE, bg=GRIS_CLAIR).pack(side="left")
         self.var_vue = tk.StringVar(value="Journalier")
         for v in ["Journalier", "Hebdomadaire", "Mensuel"]:
-            tk.Radiobutton(ctrl, text=v, variable=self.var_vue, value=v,
-                           font=POLICE, bg=GRIS_CLAIR,
-                           command=self._actualiser_planning).pack(side="left", padx=8)
+            tk.Radiobutton(
+                ctrl, text=v, variable=self.var_vue, value=v,
+                font=POLICE, bg=GRIS_CLAIR,
+                command=self._actualiser_planning
+            ).pack(side="left", padx=8)
 
         tk.Label(ctrl, text="  Date :", font=POLICE, bg=GRIS_CLAIR).pack(side="left")
-        self.entry_date_planning = tk.Entry(ctrl, font=POLICE, width=14, bd=1, relief="solid")
+        self.entry_date_planning = tk.Entry(
+            ctrl, font=POLICE, width=14, bd=1, relief="solid"
+        )
         self.entry_date_planning.insert(0, date.today().strftime("%d/%m/%Y"))
         self.entry_date_planning.pack(side="left", padx=5)
 
-        tk.Button(ctrl, text="Afficher", font=POLICE, bg=BLEU_MOYEN, fg=BLANC,
-                  relief="flat", cursor="hand2",
-                  command=self._actualiser_planning).pack(side="left", padx=8)
+        tk.Button(
+            ctrl, text="Afficher", font=POLICE,
+            bg=BLEU_MOYEN, fg=BLANC, relief="flat", cursor="hand2",
+            command=self._actualiser_planning
+        ).pack(side="left", padx=8)
 
-        self.text_planning = tk.Text(tab, font=("Courier New", 10),
-                                     bg=BLANC, fg=TEXTE, bd=1, relief="solid",
-                                     wrap="none")
-        sc_p = ttk.Scrollbar(tab, orient="vertical", command=self.text_planning.yview)
+        self.text_planning = tk.Text(
+            tab, font=("Courier New", 10),
+            bg=BLANC, fg=TEXTE, bd=1, relief="solid", wrap="none"
+        )
+        sc_p = ttk.Scrollbar(tab, orient="vertical",
+                             command=self.text_planning.yview)
         self.text_planning.configure(yscroll=sc_p.set)
-        sc_p.pack(side="right", fill="y", padx=(0,10))
-        self.text_planning.pack(fill="both", expand=True, padx=10, pady=(0,10))
+        sc_p.pack(side="right", fill="y", padx=(0, 10))
+        self.text_planning.pack(fill="both", expand=True, padx=10, pady=(0, 10))
 
-    # ─── TAB SALLES ───────────────────────────────────────────────────────────
+    # ══════════════════════════════════════════════════════════
+    # TAB SALLES
+    # ══════════════════════════════════════════════════════════
+
     def _build_tab_salles(self):
-        tab = self.tab_salles
-        cols = ("ID", "Numero", "Nom", "Type", "Capacite", "Equipements", "Localisation", "Statut")
-        self.tableau_salles = ttk.Treeview(tab, columns=cols, show="headings", height=25)
+        tab  = self.tab_salles
+        cols = ("ID", "Numero", "Nom", "Type", "Capacite",
+                "Equipements", "Localisation", "Statut")
+        self.tableau_salles = ttk.Treeview(
+            tab, columns=cols, show="headings", height=25
+        )
         largeurs = [40, 70, 130, 90, 70, 200, 150, 80]
         for col, larg in zip(cols, largeurs):
             self.tableau_salles.heading(col, text=col)
             self.tableau_salles.column(col, width=larg, anchor="center")
 
-        sc = ttk.Scrollbar(tab, orient="vertical", command=self.tableau_salles.yview)
+        sc = ttk.Scrollbar(tab, orient="vertical",
+                           command=self.tableau_salles.yview)
         self.tableau_salles.configure(yscroll=sc.set)
-        sc.pack(side="right", fill="y", pady=10, padx=(0,10))
+        sc.pack(side="right", fill="y", pady=10, padx=(0, 10))
         self.tableau_salles.pack(fill="both", expand=True, padx=10, pady=10)
 
-        if self.user.peut_gerer_salles():
-            barre = tk.Frame(tab, bg=GRIS_CLAIR)
-            barre.pack(fill="x", padx=10, pady=(0, 8))
-            tk.Button(barre, text="Supprimer salle", font=POLICE,
-                      bg=ROUGE, fg=BLANC, relief="flat", cursor="hand2",
-                      command=self._supprimer_salle).pack(side="left", padx=5)
+    # ══════════════════════════════════════════════════════════
+    # TAB NOTIFICATIONS
+    # ══════════════════════════════════════════════════════════
 
-    # ─── TAB NOTIFICATIONS ────────────────────────────────────────────────────
     def _build_tab_notifications(self):
-        tab = self.tab_notifications
-        self.text_notif = tk.Text(tab, font=POLICE, bg=BLANC, fg=TEXTE,
-                                  bd=1, relief="solid", state="disabled")
-        sc = ttk.Scrollbar(tab, orient="vertical", command=self.text_notif.yview)
+        self.text_notif = tk.Text(
+            self.tab_notifications, font=POLICE,
+            bg=BLANC, fg=TEXTE, bd=1, relief="solid", state="disabled"
+        )
+        sc = ttk.Scrollbar(self.tab_notifications, orient="vertical",
+                           command=self.text_notif.yview)
         self.text_notif.configure(yscroll=sc.set)
-        sc.pack(side="right", fill="y", pady=10, padx=(0,10))
+        sc.pack(side="right", fill="y", pady=10, padx=(0, 10))
         self.text_notif.pack(fill="both", expand=True, padx=10, pady=10)
 
-    # ─── TAB RAPPORTS ─────────────────────────────────────────────────────────
+    # ══════════════════════════════════════════════════════════
+    # TAB RAPPORTS
+    # ══════════════════════════════════════════════════════════
+
     def _build_tab_rapports(self):
         tab = self.tab_rapports
-        self.text_rapport = tk.Text(tab, font=("Courier New", 10),
-                                    bg=BLANC, fg=TEXTE, bd=1, relief="solid",
-                                    state="disabled")
-        sc = ttk.Scrollbar(tab, orient="vertical", command=self.text_rapport.yview)
+        self.text_rapport = tk.Text(
+            tab, font=("Courier New", 10),
+            bg=BLANC, fg=TEXTE, bd=1, relief="solid", state="disabled"
+        )
+        sc = ttk.Scrollbar(tab, orient="vertical",
+                           command=self.text_rapport.yview)
         self.text_rapport.configure(yscroll=sc.set)
-        sc.pack(side="right", fill="y", pady=10, padx=(0,10))
+        sc.pack(side="right", fill="y", pady=10, padx=(0, 10))
         self.text_rapport.pack(fill="both", expand=True, padx=10, pady=10)
+        tk.Button(
+            tab, text="Actualiser rapport", font=POLICE,
+            bg=BLEU_MOYEN, fg=BLANC, relief="flat", cursor="hand2",
+            command=self._actualiser_rapport
+        ).pack(pady=4)
 
-        tk.Button(tab, text="Actualiser rapport", font=POLICE,
-                  bg=BLEU_MOYEN, fg=BLANC, relief="flat", cursor="hand2",
-                  command=self._actualiser_rapport).pack(pady=4)
+    # ══════════════════════════════════════════════════════════
+    # TAB UTILISATEURS (admin seulement)
+    # ══════════════════════════════════════════════════════════
 
-    # ─── TAB UTILISATEURS ─────────────────────────────────────────────────────
     def _build_tab_utilisateurs(self):
-        tab = self.tab_utilisateurs
+        tab  = self.tab_utilisateurs
         cols = ("ID", "Nom", "Prenom", "Email", "Role", "Actif")
-        self.tableau_users = ttk.Treeview(tab, columns=cols, show="headings", height=20)
+        self.tableau_users = ttk.Treeview(
+            tab, columns=cols, show="headings", height=20
+        )
         for col in cols:
             self.tableau_users.heading(col, text=col)
             self.tableau_users.column(col, width=150, anchor="center")
 
-        sc = ttk.Scrollbar(tab, orient="vertical", command=self.tableau_users.yview)
+        sc = ttk.Scrollbar(tab, orient="vertical",
+                           command=self.tableau_users.yview)
         self.tableau_users.configure(yscroll=sc.set)
-        sc.pack(side="right", fill="y", pady=10, padx=(0,10))
+        sc.pack(side="right", fill="y", pady=10, padx=(0, 10))
         self.tableau_users.pack(fill="both", expand=True, padx=10, pady=10)
 
         barre = tk.Frame(tab, bg=GRIS_CLAIR)
-        barre.pack(fill="x", padx=10, pady=(0,8))
-        tk.Button(barre, text="Supprimer utilisateur", font=POLICE,
-                  bg=ROUGE, fg=BLANC, relief="flat", cursor="hand2",
-                  command=self._supprimer_utilisateur).pack(side="left", padx=5)
-        tk.Button(barre, text="Ajouter utilisateur", font=POLICE,
-                  bg=VERT, fg=BLANC, relief="flat", cursor="hand2",
-                  command=self._ajouter_utilisateur).pack(side="left", padx=5)
+        barre.pack(fill="x", padx=10, pady=(0, 8))
+        tk.Button(
+            barre, text="Supprimer utilisateur", font=POLICE,
+            bg=ROUGE, fg=BLANC, relief="flat", cursor="hand2",
+            command=self._supprimer_utilisateur
+        ).pack(side="left", padx=5)
+        tk.Button(
+            barre, text="Ajouter utilisateur", font=POLICE,
+            bg=VERT, fg=BLANC, relief="flat", cursor="hand2",
+            command=self._ajouter_utilisateur
+        ).pack(side="left", padx=5)
 
-    # ─── ACTIONS ──────────────────────────────────────────────────────────────
+    # ══════════════════════════════════════════════════════════
+    # ACTIONS — RÉSERVER (sauvegarde SQLite immédiate)
+    # ══════════════════════════════════════════════════════════
+
     def _reserver(self):
         try:
             from models.reservation import Reservation
+
             salle = self.planning.get_salle_par_nom(self.var_salle.get())
             resp  = self.entry_resp.get().strip()
             d     = datetime.strptime(self.entry_date.get(), "%d/%m/%Y").date()
@@ -264,72 +335,86 @@ class App(tk.Tk):
                 messagebox.showwarning("Champ manquant", "Saisissez le responsable.")
                 return
             if h2 <= h1:
-                messagebox.showwarning("Horaire invalide", "Heure fin > Heure debut.")
+                messagebox.showwarning("Horaire invalide",
+                                       "L'heure de fin doit etre apres l'heure de debut.")
                 return
 
             res = Reservation(salle, resp, d, h1, h2, motif)
             succes, msg = self.planning.ajouter_reservation(res)
 
             if succes:
+                # ══ BLOC 4 : Sauvegarde immédiate dans SQLite ══
+                if self.res_dao:
+                    self.res_dao.inserer(res)
+                    print(f"[SQLite] Reservation sauvegardee : {res}")
                 self.notif.confirmation_reservation(res, self.user.get_nom_complet())
                 messagebox.showinfo("Succes", msg)
                 self._actualiser_tout()
             else:
-                # Proposer des creneaux alternatifs
+                # Proposer créneaux alternatifs
                 creneaux = self.planning.proposer_creneaux(salle, d)
                 suggestion = ""
                 if creneaux:
-                    suggestion = "\n\nCreneaux disponibles pour cette salle :\n"
+                    suggestion = "\n\nCreneaux disponibles :\n"
                     for c in creneaux[:3]:
-                        suggestion += f"   {c[0].strftime('%H:%M')} -> {c[1].strftime('%H:%M')}\n"
+                        suggestion += (
+                            f"   {c[0].strftime('%H:%M')} "
+                            f"-> {c[1].strftime('%H:%M')}\n"
+                        )
                 messagebox.showerror("Conflit detecte", msg + suggestion)
 
         except ValueError as e:
-            messagebox.showerror("Erreur", f"Format incorrect :\n{e}\nEx: 22/04/2026  |  08:00")
+            messagebox.showerror("Erreur",
+                                 f"Format incorrect :\n{e}\nEx: 22/04/2026  |  08:00")
+
+    # ══════════════════════════════════════════════════════════
+    # ACTIONS — SUPPRIMER (supprime aussi dans SQLite)
+    # ══════════════════════════════════════════════════════════
 
     def _supprimer(self):
         sel = self.tableau_res.selection()
         if not sel:
-            messagebox.showwarning("Aucune selection", "Selectionnez une reservation.")
+            messagebox.showwarning("Aucune selection",
+                                   "Selectionnez une reservation.")
             return
         rid = int(self.tableau_res.item(sel[0])["values"][0])
-        r = self.planning.get_reservation_par_id(rid)
+        r   = self.planning.get_reservation_par_id(rid)
+
         if messagebox.askyesno("Confirmer", f"Annuler la reservation #{rid} ?"):
             self.notif.annulation_reservation(r, self.user.get_nom_complet())
             self.planning.supprimer_reservation(rid)
+
+            # ══ BLOC 4 : Suppression dans SQLite ══
+            if self.res_dao:
+                self.res_dao.supprimer(rid)
+                print(f"[SQLite] Reservation #{rid} supprimee.")
+
             self._actualiser_tout()
 
     def _voir_disponibles(self):
         try:
-            d  = datetime.strptime(self.entry_date.get(), "%d/%m/%Y").date()
+            d  = datetime.strptime(self.entry_date.get(),  "%d/%m/%Y").date()
             h1 = datetime.strptime(self.entry_debut.get(), "%H:%M").time()
             h2 = datetime.strptime(self.entry_fin.get(),   "%H:%M").time()
             dispo = self.planning.get_salles_disponibles(d, h1, h2)
             if dispo:
                 liste = "\n".join(f"  {s.get_info()}" for s in dispo)
-                messagebox.showinfo("Salles disponibles",
-                                    f"Creneaux libres le {d.strftime('%d/%m/%Y')} "
-                                    f"{h1.strftime('%H:%M')} -> {h2.strftime('%H:%M')} :\n\n{liste}")
+                messagebox.showinfo(
+                    "Salles disponibles",
+                    f"Libres le {d.strftime('%d/%m/%Y')} "
+                    f"{h1.strftime('%H:%M')} -> {h2.strftime('%H:%M')} :\n\n{liste}"
+                )
             else:
                 messagebox.showwarning("Aucune salle libre",
-                                       "Toutes les salles sont occupees sur ce creneau.")
+                                       "Toutes les salles sont occupees.")
         except ValueError:
             messagebox.showerror("Erreur", "Verifiez la date et les heures.")
-
-    def _supprimer_salle(self):
-        sel = self.tableau_salles.selection()
-        if not sel:
-            messagebox.showwarning("Aucune selection", "Selectionnez une salle.")
-            return
-        sid = int(self.tableau_salles.item(sel[0])["values"][0])
-        if messagebox.askyesno("Confirmer", "Supprimer cette salle ?"):
-            self.planning.supprimer_salle(sid)
-            self._actualiser_tout()
 
     def _supprimer_utilisateur(self):
         sel = self.tableau_users.selection()
         if not sel:
-            messagebox.showwarning("Aucune selection", "Selectionnez un utilisateur.")
+            messagebox.showwarning("Aucune selection",
+                                   "Selectionnez un utilisateur.")
             return
         uid = int(self.tableau_users.item(sel[0])["values"][0])
         if messagebox.askyesno("Confirmer", "Supprimer cet utilisateur ?"):
@@ -339,19 +424,23 @@ class App(tk.Tk):
     def _ajouter_utilisateur(self):
         fenetre = tk.Toplevel(self)
         fenetre.title("Ajouter un utilisateur")
-        fenetre.geometry("350x350")
+        fenetre.geometry("350x360")
         fenetre.configure(bg=GRIS_CLAIR)
         fenetre.resizable(False, False)
 
         champs = {}
-        for i, (label, defaut) in enumerate([
-            ("Nom", ""), ("Prenom", ""), ("Email", "@up.bj"),
-            ("Mot de passe", ""), ("Role (administrateur/enseignant/agent)", "enseignant")
-        ]):
-            tk.Label(fenetre, text=label, font=POLICE, bg=GRIS_CLAIR).pack(pady=(8, 0))
+        for label, defaut, masque in [
+            ("Nom", "", False),
+            ("Prenom", "", False),
+            ("Email", "@up.bj", False),
+            ("Mot de passe", "", True),
+            ("Role (administrateur/enseignant/agent)", "enseignant", False),
+        ]:
+            tk.Label(fenetre, text=label, font=POLICE,
+                     bg=GRIS_CLAIR).pack(pady=(8, 0))
             e = tk.Entry(fenetre, font=POLICE, width=30, bd=1, relief="solid")
             e.insert(0, defaut)
-            if "passe" in label.lower():
+            if masque:
                 e.config(show="*")
             e.pack()
             champs[label] = e
@@ -366,16 +455,23 @@ class App(tk.Tk):
             else:
                 messagebox.showerror("Erreur", msg)
 
-        tk.Button(fenetre, text="Creer le compte", font=("Segoe UI", 10, "bold"),
-                  bg=BLEU_MOYEN, fg=BLANC, relief="flat", cursor="hand2",
-                  command=valider).pack(pady=15, ipadx=10, ipady=5)
+        tk.Button(
+            fenetre, text="Creer le compte",
+            font=("Segoe UI", 10, "bold"),
+            bg=BLEU_MOYEN, fg=BLANC, relief="flat", cursor="hand2",
+            command=valider
+        ).pack(pady=15, ipadx=10, ipady=5)
 
     def _deconnecter(self):
-        if messagebox.askyesno("Deconnexion", "Voulez-vous vous deconnecter ?"):
+        if messagebox.askyesno("Deconnexion",
+                               "Voulez-vous vous deconnecter ?"):
             self.auth.deconnecter()
             self.destroy()
 
-    # ─── ACTUALISATION ────────────────────────────────────────────────────────
+    # ══════════════════════════════════════════════════════════
+    # ACTUALISATION
+    # ══════════════════════════════════════════════════════════
+
     def _actualiser_tout(self):
         self._actualiser_liste_reservations()
         self._actualiser_salles()
@@ -392,17 +488,18 @@ class App(tk.Tk):
         for i, r in enumerate(self.planning.get_reservations()):
             tag = "pair" if i % 2 == 0 else "impair"
             self.tableau_res.insert("", "end", tags=(tag,), values=(
-                r.get_id(), r.get_salle().get_nom(),
+                r.get_id(),
+                r.get_salle().get_nom(),
                 r.get_date().strftime("%d/%m/%Y"),
                 r.get_heure_debut().strftime("%H:%M"),
                 r.get_heure_fin().strftime("%H:%M"),
-                r.get_responsable(), r.get_motif()
+                r.get_responsable(),
+                r.get_motif()
             ))
 
     def _actualiser_salles(self):
         for row in self.tableau_salles.get_children():
             self.tableau_salles.delete(row)
-
         for s in self.planning.get_salles():
             self.tableau_salles.insert("", "end", values=(
                 s.get_id(),
@@ -410,7 +507,7 @@ class App(tk.Tk):
                 s.get_nom(),
                 s.get_type(),
                 s.get_capacite(),
-                s.nom_equipements(),
+                 ", ".join(e.get_type() for e in s.get_equipements()) if s.get_equipements() else "Aucun",
                 s.get_localisation(),
                 "Disponible" if s.est_disponible() else "Indisponible"
             ))
@@ -419,29 +516,34 @@ class App(tk.Tk):
         self.text_planning.config(state="normal")
         self.text_planning.delete("1.0", "end")
         try:
-            d = datetime.strptime(self.entry_date_planning.get(), "%d/%m/%Y").date()
+            d = datetime.strptime(
+                self.entry_date_planning.get(), "%d/%m/%Y"
+            ).date()
         except:
             d = date.today()
 
         vue = self.var_vue.get()
         if vue == "Journalier":
-            res = self.planning.get_reservations_par_date(d)
+            res   = self.planning.get_reservations_par_date(d)
             titre = f"Planning du {d.strftime('%d/%m/%Y')}"
         elif vue == "Hebdomadaire":
-            res = self.planning.get_reservations_semaine(d)
-            titre = f"Planning de la semaine du {d.strftime('%d/%m/%Y')}"
+            res   = self.planning.get_reservations_semaine(d)
+            titre = f"Planning semaine du {d.strftime('%d/%m/%Y')}"
         else:
-            res = self.planning.get_reservations_mois(d.year, d.month)
+            res   = self.planning.get_reservations_mois(d.year, d.month)
             titre = f"Planning du mois {d.strftime('%m/%Y')}"
 
-        self.text_planning.insert("end", f"{'='*70}\n{titre}\n{'='*70}\n\n")
+        self.text_planning.insert("end",
+                                  f"{'='*70}\n{titre}\n{'='*70}\n\n")
         if not res:
-            self.text_planning.insert("end", "  Aucune reservation sur cette periode.\n")
+            self.text_planning.insert("end",
+                                      "  Aucune reservation sur cette periode.\n")
         else:
             for r in sorted(res, key=lambda x: (x.get_date(), x.get_heure_debut())):
                 self.text_planning.insert("end",
                     f"  [{r.get_date().strftime('%d/%m')}] "
-                    f"{r.get_heure_debut().strftime('%H:%M')} - {r.get_heure_fin().strftime('%H:%M')}"
+                    f"{r.get_heure_debut().strftime('%H:%M')}"
+                    f"-{r.get_heure_fin().strftime('%H:%M')}"
                     f"  |  {r.get_salle().get_nom():<20}"
                     f"  |  {r.get_responsable():<20}"
                     f"  |  {r.get_motif()}\n"
@@ -465,19 +567,21 @@ class App(tk.Tk):
         stats = self.planning.get_statistiques()
         lignes = [
             "=" * 60,
-            "  RAPPORT STATISTIQUE — SYSTEME DE RESERVATION",
+            "  RAPPORT — SYSTEME DE RESERVATION",
             "  Universite de Parakou",
             "=" * 60,
-            f"\n  Total reservations     : {stats['total_reservations']}",
-            f"  Total salles           : {stats['total_salles']}",
-            f"  Salle plus utilisee    : {stats['salle_plus_utilisee']}",
-            "\n  TAUX D'OCCUPATION PAR SALLE :",
+            f"\n  Total reservations  : {stats['total_reservations']}",
+            f"  Total salles        : {stats['total_salles']}",
+            f"  Salle + utilisee    : {stats['salle_plus_utilisee']}",
+            "\n  TAUX D'OCCUPATION :",
             "-" * 40,
         ]
         for nom, taux in stats["taux_occupation"].items():
-            nb = stats["compteur_par_salle"].get(nom, 0)
+            nb   = stats["compteur_par_salle"].get(nom, 0)
             barre = "#" * int(taux / 5)
-            lignes.append(f"  {nom:<20} {barre:<20} {taux}% ({nb} res.)")
+            lignes.append(
+                f"  {nom:<20} {barre:<20} {taux}% ({nb} res.)"
+            )
         self.text_rapport.insert("end", "\n".join(lignes))
         self.text_rapport.config(state="disabled")
 
@@ -492,12 +596,15 @@ class App(tk.Tk):
             ))
 
     def _maj_barre(self):
-        stats = self.planning.get_statistiques()
-        non_lues = len(self.notif.get_non_lues(self.user.get_nom_complet()))
+        stats    = self.planning.get_statistiques()
+        non_lues = len(
+            self.notif.get_non_lues(self.user.get_nom_complet())
+        )
+        sqlite   = "Connecte SQLite" if self.res_dao else "Sans SQLite"
         self.barre_stat.config(
             text=f"  Reservations: {stats['total_reservations']}  |  "
                  f"Salles: {stats['total_salles']}  |  "
-                 f"Notifications non lues: {non_lues}  |  "
-                 f"Connecte: {self.user.get_nom_complet()} [{self.user.get_role()}]"
+                 f"Notifs: {non_lues}  |  "
+                 f"{sqlite}  |  "
+                 f"{self.user.get_nom_complet()} [{self.user.get_role()}]"
         )
-
